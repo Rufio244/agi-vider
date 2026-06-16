@@ -1,0 +1,2 @@
+- name: 🛠️ VIDER Self‑Fix
+  run: python .github/scripts/vider_self_fix.py main.py
