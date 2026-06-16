@@ -1,0 +1,63 @@
+name: VIDER Auto Deploy & Self‑Fix
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'  # ตรวจสอบทุก 6 ชม.
+
+jobs:
+  check-and-fix:
+    runs-on: ubuntu‑latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_PAT }}
+          fetch‑depth: 0
+
+      - name: 🐍 Set up Python
+        uses: actions/setup‑python@v5
+        with:
+          python‑version: "3.11"
+
+      - name: 📦 Install dependencies
+        run: |
+          pip install -r requirements.txt flake8 black pytest
+
+      - name: 🔍 Lint & Auto‑fix style
+        id: lint
+        continue‑on‑error: true
+        run: |
+          black .
+          flake8 . --exit-zero
+
+      - name: 🧪 Run tests
+        id: test
+        continue‑on‑error: false
+        run: pytest tests/ -v
+
+      - name: 🤖 Commit fixes if any
+        if: success() && steps.lint.outcome == 'success'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_PAT }}
+        run: |
+          git config user.name "VIDER AUTO"
+          git config user.email "auto@videragi.com"
+          git add .
+          git diff --staged --quiet || git commit -m "🤖 VIDER AUTO: Auto‑fix & lint"
+          git push origin main
+
+      - name: 🚀 Deploy to Server
+        if: success()
+        uses: appleboy/ssh‑action@v1
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /opt/vider‑lingua
+            git pull origin main
+            pip install -r requirements.txt --upgrade
+            systemctl restart vider‑lingua.service
+            systemctl is‑active vider‑lingua.service
