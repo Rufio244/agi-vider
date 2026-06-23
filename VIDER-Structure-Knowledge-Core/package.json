@@ -1,1 +1,11 @@
+{
+  "name": "vider-structure-knowledge-core",
+  "version": "1.0.0",
+  "description": "ระบบสแกนโครงสร้างสิ่งของ และจัดสรรลำดับการเรียนรู้ความรู้ สำหรับ VIDER AGI",
+  "main": "src/vider_structure_knowledge.js",
+  "keywords": ["VIDER", "AGI", "StructureScan", "Knowledge", "Sequencer", "Core"],
+  "author": "VIDER AGI System",
+  "license": "MIT",
+  "engines": { "node": ">=16.0.0" }
+}
 
